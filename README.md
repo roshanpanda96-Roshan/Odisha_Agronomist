@@ -13,17 +13,17 @@ _It runs on Render's free plan, so the first visit after a quiet period can take
 ### 1. Advisor
 Enter the district, soil and weather values to get crop matches, a yield range and the action plan.
 
-![1. Advisor tab](screenshots/1-advisor.png)
+![1. Advisor tab](screenshots/1no.png)
 
 ### 2. Model & Data
 Test accuracy, Random Forest vs XGBoost, what drives the prediction and the score per crop.
 
-![2. Model and Data tab](screenshots/2-model-and-data.png)
+![2. Model and Data tab](screenshots/2no.png)
 
 ### 3. About
 How the app works, the data behind it and the team members.
 
-![3. About tab](screenshots/3-about.png)
+![3. About tab](screenshots/3no.png)
 
 ## ✨ Features
 
