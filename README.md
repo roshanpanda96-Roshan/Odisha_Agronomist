@@ -1,131 +1,119 @@
-# Odisha Agronomist
+# 🌾 Odisha Agronomist
 
-A web app that helps Odisha farmers choose a crop. It takes the district, soil nutrients and weather, then gives:
+**Crop advice from soil, weather and Odisha's yield records.**
 
-1. **Optimal crop recommendation** – a Random Forest classifier scores 22 crops for the field.
-2. **Yield forecast** – the typical yield range for that crop and district, taken from Odisha's historical records.
-3. **AI Agronomist action plan** – a sowing schedule, fertilizer management and irrigation strategy written by an LLM, in English, Odia, Hindi, Bengali or Telugu.
+Odisha Agronomist is a crop advisory web app for farmers in Odisha. You describe your field (district, soil nutrients N, P, K, soil pH and local weather) and the app tells you which crops suit those conditions, what yields farmers in Odisha have typically seen, and a practical sowing, fertilizer and irrigation plan in your own language.
 
-**Live app:** https://odisha-agronomist-mm4j.onrender.com/
+**🔗 Live app:** https://odisha-agronomist-mm4j.onrender.com/
 
-_The app runs on Render's free plan, so the first visit after a quiet period can take 30 to 60 seconds to wake up._
+_It runs on Render's free plan, so the first visit after a quiet period can take 30 to 60 seconds to wake up._
 
-## Screenshots
+## 📸 Screenshots
 
-**Advisor** – enter the district, soil and weather values to get crop matches, a yield range and the action plan.
+### 1. Advisor
+Enter the district, soil and weather values to get crop matches, a yield range and the action plan.
 
-![Advisor tab](screenshots/1no.png)
+![1. Advisor tab](screenshots/1no.png)
 
-**Model & Data** – accuracy, Random Forest vs XGBoost, what drives the prediction and score per crop.
+### 2. Model & Data
+Test accuracy, Random Forest vs XGBoost, what drives the prediction and the score per crop.
 
-![Model and Data tab](screenshots/2no.png)
+![2. Model and Data tab](screenshots/2no.png)
 
-**About** – how the app works, the data behind it and the team.
+### 3. About
+How the app works, the data behind it and the team members.
 
-![About tab](screenshots/3no.png)
+![3. About tab](screenshots/3no.png)
 
-## Inputs
+## ✨ Features
 
-| Input | Details |
-|---|---|
-| District | Any of Odisha's 30 districts in the yield records |
-| Soil nutrients | Nitrogen, phosphorus, potassium (kg/ha) and soil pH |
-| Soil type | One of Odisha's 8 soil groups (defaults to the main soil of the district); fills the typical pH and shows the soil's N, P, K status |
-| Season | Kharif (Jun–Oct), Rabi (Nov–Feb) or Zaid (Mar–May) |
-| Weather | Temperature (°C), humidity (%), rainfall (mm per month in the season). Filled in automatically from the district's 2019–2023 averages; can be changed |
-| Language | English, Odia, Hindi, Bengali, Telugu |
-| Crop to check (optional) | See the suitability of a specific crop |
+- **Top 3 crop matches:** A trained classifier scores 22 crops for your field. Tap any crop to get advice for it.
+- **Field-fit check:** Shows whether each input is in, below or above the crop's usual range.
+- **Typical yield:** Low, typical and high yield from historical Odisha records (district level where there is enough data, otherwise all of Odisha), with the record count and confidence.
+- **AI action plan:** An LLM writes a sowing schedule, fertilizer management and irrigation strategy in English, Odia, Hindi, Bengali or Telugu.
+- **Model & Data tab:** Test accuracy, Random Forest vs XGBoost comparison, feature importance and per-crop F1 scores.
+- **Themed UI:** Four themes (Monsoon, Harvest, Sunrise, Chilika) and an animated farm scene.
 
-## How it works
+## 🔄 How it works
 
-- **Crop classifier:** trained on the Kaggle Crop Recommendation dataset (22 crops). Random Forest scored 99.3% and XGBoost 98.9% on a held-out 20% test split (5-fold cross-validation gives the same picture); Random Forest is used. This dataset is synthetic and very easy (a single decision tree also scores about 99%), so treat the accuracy as a demonstration figure, not field accuracy.
-- **Yield ranges:** built from the Indian crop production dataset, filtered to Odisha (29,625 rows, 30 districts, 43 crops). The app shows the 25th to 75th percentile of past yields (tonnes per hectare), not a model prediction.
-- **Action plan:** the crop, soil, weather and yield range are sent to an LLM prompted to act as an Odisha agronomist, through the OpenAI Python library. Groq is used if `GROQ_API_KEY` is set, otherwise xAI (`XAI_API_KEY`), otherwise OpenAI (`OPENAI_API_KEY`). Answers are cached and limited to 6 AI calls per visitor per minute (`AI_CALLS_PER_MINUTE`).
-- **Guard rails:** inputs are only accepted inside the range the model was trained on, crops not grown in Odisha (apple, grapes; change with `EXCLUDED_CROPS`) are never recommended, and a top score under 40% is shown as "no strong match".
+1. You pick your district and enter N, P, K, pH, temperature, humidity and rainfall (optionally a crop to check).
+2. The ML model scores all 22 crops (about 99% accuracy on held-out test data).
+3. Odisha yield records are checked for a typical yield range.
+4. An LLM turns your values, the chosen crop and the yield range into a plan in your language.
 
-## Data notes and limitations
+## 🧰 Tech stack
 
-- No values in the source datasets were added or changed. The yield file was only filtered to Odisha.
-- About half of the yield values in the source data are recorded in a different unit (for example rice at 150+ t/ha), and all rows from 2016 onward are affected. A yield prediction model trained on this data performed worse than a plain average, so the app shows a typical range instead. Rows with implausible yields are left out **only when the range is summarised**, never from the dataset.
-- The crop dataset has no district column, so the district affects the yield range and the AI advice, not the crop score.
-- 13 of the 22 crops (for example apple, mango, banana) have no Odisha yield records; the app shows suitability only for them. Crops with few records (for example cotton) are flagged as low confidence.
-- Crop suggestions are most reliable for Kharif. The crop dataset has no mustard, groundnut, potato, wheat or vegetables, so Rabi and Zaid suggestions are limited; the app says so with each Rabi or Zaid result.
-- Soil type: districts, pH and N/P/K status (low / medium / high) come from "Soil of Orissa and Its Management", Orissa Review (Govt. of Odisha), Nov 2005. Only pH is filled in. N/P/K status is shown as text, because the crop dataset's N/P/K behave like the nutrients a field receives (rice rows have a median of 80:47:40, close to a fertilizer dose), not the soil's own status: filling "low" status values made the model suggest coconut for most Kharif fields.
-- Advice is guidance only. Confirm doses and dates with the local Krishi Vigyan Kendra.
+Flask · pandas · scikit-learn · Random Forest · XGBoost · OpenAI-compatible LLM API (xAI Grok) · HTML, CSS and JavaScript (single-page frontend served as a Jinja template)
 
-## Project structure
+## 📊 Data
 
-```
-app.py                         Flask backend (loads both models with joblib)
-templates/index.html           Web interface
-models/crop_model.pkl          Random Forest crop classifier
-models/yield_stats.pkl         Yield ranges per crop and district
-data/processed/                Odisha yield data and crop recommendation data
-odisha_crop_advisory_v5.ipynb  Notebook that builds the two .pkl files
-build_district_climate.py      Builds data/processed/district_climate.csv (typical weather per district and season)
-requirements.txt
-```
+- **Crop Recommendation dataset:** 2,200 rows, 22 crops, 7 inputs, used to train the classifier.
+- **Indian crop production dataset:** filtered to Odisha (29,625 rows, 30 districts, 43 crops), used for yield ranges.
+- No values in the source datasets were added or changed.
 
-## Run locally
+## 🚀 Run locally
 
 ```bash
+# 1. Clone
+git clone https://github.com/shibangmaity/Odisha_Agronomist.git
+cd Odisha_Agronomist
+
+# 2. Install dependencies
 pip install -r requirements.txt
 ```
 
-Create a file named `.env` next to `app.py` (it is git-ignored) with one of:
+Create a file named `.env` next to `app.py` (it is git-ignored) with your key. The app accepts any one of these:
 
 ```
-GROQ_API_KEY=your_key
-# XAI_API_KEY or OPENAI_API_KEY also work
+XAI_API_KEY=your_key
+# or GROQ_API_KEY=your_key
+# or OPENAI_API_KEY=your_key
 ```
 
 ```bash
+# 3. Start the app
 python app.py
 ```
 
-Open http://127.0.0.1:5000. Without a key, crop matches and yield ranges still work; only the action plan needs it.
+Open `http://localhost:5000` in your browser. Without a key, crop matches and yield ranges still work; only the AI action plan needs it.
 
-## District weather table
+> The page must be opened through Flask. If you open `index.html` directly in the browser, the district list will show raw template text like `{{ d.title() }}`.
 
-`data/processed/district_climate.csv` holds the typical temperature, humidity and monthly rainfall for each district headquarters and season (2019–2023, Open-Meteo historical API, ERA5 reanalysis). It is built once and committed, so the app makes no weather calls at runtime:
+## 📁 Project structure
 
-```bash
-python build_district_climate.py
+```
+├── app.py                          # Flask app and API routes
+├── templates/
+│   └── index.html                  # Frontend (Advisor, Model & Data, About)
+├── models/
+│   ├── crop_model.pkl              # Random Forest crop classifier
+│   └── yield_stats.pkl             # Yield ranges per crop and district
+├── data/processed/                 # Odisha yield data and crop recommendation data
+├── screenshots/                    # Images used in this README
+├── odisha_crop_advisory_v5.ipynb   # Notebook that builds the two .pkl files
+├── requirements.txt
+└── README.md
 ```
 
-Downloads are cached in `data/raw/climate_cache/` (git-ignored). Without the CSV the app still works; weather is then entered by hand.
-
-## Deploy on Render
+## ☁️ Deploy on Render
 
 - Build command: `pip install -r requirements.txt`
 - Start command: `gunicorn app:app --workers 1 --timeout 300`
-- Environment variable: `GROQ_API_KEY` (or `XAI_API_KEY` / `OPENAI_API_KEY`)
+- Environment variable: `XAI_API_KEY` (your key, never commit it)
 
-## Retrain the models
+## ⚠️ Good to know
 
-```bash
-pip install -r requirements.txt -r requirements-dev.txt
-jupyter nbconvert --to notebook --execute --inplace odisha_crop_advisory_v5.ipynb
-```
+- Crop scores use soil and weather values only. The district is used for the yield range and the AI's local advice.
+- The model learned from a general crop dataset (synthetic Kaggle data), so treat scores and the 99% accuracy as guidance and a demonstration figure, not a guarantee in the field.
+- Some crops, like mango and coconut, have no Odisha yield records, so no yield range is shown. Crops with few records (for example cotton) have low confidence.
+- Yield values in the source data mix units (for example rice at 150+ t/ha, mostly from 2016 onward), so the app shows a typical range (25th–75th percentile) instead of a prediction. Implausible rows are left out only when the range is calculated, never from the dataset.
+- Always confirm fertilizer doses with your local Krishi Vigyan Kendra (KVK) before buying inputs.
 
-This rebuilds both `.pkl` files. Train with the same scikit-learn version as `requirements.txt`, because the app loads the model with that version.
+## 👥 Team Members
 
-## Team Members
+Shibang Maity · Priyanshu Sekhar Bhuyan · Roshan Panda · M. Tanisha · Rishav Kumar Shrivastava · Divyansh Singh
 
-| Name |
-|---|
-| Shibang Maity |
-| Priyanshu Sekhar Bhuyan |
-| Roshan Panda |
-| M.Tanisha |
-| Rishav Kumar Shrivastava |
-| Divyansh Singh |
-
-Contributions go through GitHub.
-
-## Data sources
+## 📚 Data sources
 
 - Indian crop production yield dataset (Kaggle)
 - Crop Recommendation dataset (Kaggle)
-- Soil of Orissa and Its Management, Orissa Review, Government of Odisha, November 2005
-- Open-Meteo historical weather API (ERA5 reanalysis), 2019–2023
